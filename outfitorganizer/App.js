@@ -1,28 +1,59 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, Button } from 'react-native';
+import {
+	Text,
+	View,
+	TouchableOpacity,
+	Button,
+	Platform,
+	Image
+} from 'react-native';
 import { Camera } from 'expo-camera';
-import { API_ADDRESS } from './constants';
+import { API_ADDRESS, DROPBOX_ACCESS_TOKEN } from './constants';
+import { Dropbox } from 'dropbox';
+const dbx = new Dropbox({
+	accessToken: DROPBOX_ACCESS_TOKEN,
+	fetch
+});
 
 export default function App() {
 	const [type, setType] = useState(Camera.Constants.Type.back);
+	const [url, setUrl] = useState();
 	let camera = null;
 	const takePhoto = async () => {
-		if (camera) var data = await camera.takePictureAsync();
-
-		console.log(process.env.API_ADDRESS);
-		const formData = new FormData();
-		formData.append('file', {
-			uri: data.uri,
+		if (camera)
+			var data = await camera.takePictureAsync({
+				quality: 0.5,
+				base64: true
+			});
+		let contents = {
+			uri:
+				Platform.OS === 'ios'
+					? data.uri.replace('file://', '')
+					: data.uri,
 			name: 'picture.jpg',
 			type: 'image/jpg'
-		});
-		const response = await fetch(`${API_ADDRESS}/api/user`);
-		const value = await response.json();
-		console.log(value);
+		};
+		try {
+			await dbx.filesUpload({
+				path: '/testfolder/test-image.jpg',
+				contents
+			});
+			const response = await fetch(`${API_ADDRESS}/api/upload`);
+			let value = await response.json();
+			setUrl(value.link);
+		} catch (err) {
+			console.error(err);
+		}
 	};
 
 	return (
 		<View style={{ flex: 1 }}>
+			<Image
+				style={{ width: 200, height: 200 }}
+				source={{
+					uri: url
+				}}
+			/>
 			<Camera
 				style={{ flex: 1 }}
 				type={type}

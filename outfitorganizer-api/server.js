@@ -7,6 +7,9 @@ const pg = require('knex')({
 });
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+require('isomorphic-fetch');
+const Dropbox = require('dropbox').Dropbox;
+const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN });
 router.use('/user', require('./routes/user'));
 router.get('/', (req, res) => {
 	pg.select()
@@ -41,6 +44,12 @@ router.post('/register', (req, res) => {
 			.then(data => res.send(data))
 			.catch(err => console.error(err));
 	});
+});
+
+router.get('/upload', (req, res) => {
+	dbx.filesGetTemporaryLink({
+		path: '/testfolder/test-image.jpg'
+	}).then(response => res.json({ link: response.link }));
 });
 
 module.exports = router;
