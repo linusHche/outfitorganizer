@@ -19,6 +19,11 @@ export default function App() {
 	const [type, setType] = useState(Camera.Constants.Type.back);
 	const [url, setUrl] = useState();
 	let camera = null;
+	useEffect(() => {
+		(async () => {
+			const { status } = await Camera.requestPermissionsAsync();
+		})();
+	}, []);
 	const takePhoto = async () => {
 		if (camera)
 			var data = await camera.takePictureAsync({
@@ -93,7 +98,7 @@ export default function App() {
 							Flip{' '}
 						</Text>
 					</TouchableOpacity>
-					<Button title='Take Photo' onPress={takePhoto}></Button>
+					<Button title="Take Photo" onPress={takePhoto}></Button>
 				</View>
 			</Camera>
 		</View>

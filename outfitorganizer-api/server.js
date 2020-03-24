@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 module.exports = (pg, bcrypt) => {
 	router.use('/user', require('./routes/user')(pg));
 	router.use('/signin', require('./routes/signin')(pg, bcrypt, jwt));
-	router.use('register', require('./routes/register')(pg, bcrypt));
+	router.use('/register', require('./routes/register')(pg, bcrypt));
 	router.get('/', (req, res) => {
 		pg.select()
 			.table('user')
