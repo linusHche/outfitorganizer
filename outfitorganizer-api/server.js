@@ -16,9 +16,12 @@ module.exports = (pg, bcrypt) => {
 	});
 
 	router.get('/upload', (req, res) => {
-		dbx.filesGetTemporaryLink({
+		dbx.sharingCreateSharedLinkWithSettings({
 			path: '/testfolder/test-image.jpg'
-		}).then(response => res.json({ link: response.link }));
+		}).then(response => console.log(response.url));
+		// dbx.filesGetTemporaryLink({
+		// 	path: '/testfolder/test-image.jpg'
+		// }).then(response => res.json({ link: response.link }));
 	});
 	return router;
 };
