@@ -5,14 +5,19 @@ import {
 	Dimensions,
 	ScrollView,
 	Image,
-	ActivityIndicator
+	ActivityIndicator,
+	TouchableOpacity,
+	Button
 } from 'react-native';
 import Clothes from '../Clothes/Clothes';
-import OutfitCamera from '../OutfitCamera/OutfitCamera';
+import CameraModal from '../CameraModal/CameraModal';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 export default class ClothesMenu extends React.Component {
 	state = {
-		loaded: false
+		loaded: false,
+		isCameraModalVisible: false,
+		clothes: []
 	};
 	componentDidMount() {
 		this.fetchImages();
@@ -41,6 +46,13 @@ export default class ClothesMenu extends React.Component {
 		}
 		return clotheslist;
 	};
+
+	toggleCameraModal = value => {
+		this.setState({ isCameraModalVisible: value });
+	};
+
+	takePicture = value => {};
+
 	render() {
 		if (this.state.loaded !== true)
 			return (
@@ -49,11 +61,34 @@ export default class ClothesMenu extends React.Component {
 				</View>
 			);
 		return (
-			<View>
+			<View style={{ flex: 1 }}>
+				<CameraModal
+					visible={this.state.isCameraModalVisible}
+					toggle={this.toggleCameraModal}
+					takePicture={this.takePicture}
+				/>
 				<ScrollView>
 					<View>{this.renderClothes()}</View>
 				</ScrollView>
-				<View style={{ position: 'absolute' }}></View>
+				<TouchableOpacity
+					style={{
+						position: 'absolute',
+						bottom: 10,
+						left: Dimensions.get('window').width / 2 - 25,
+						zIndex: 1
+					}}
+				>
+					<Icon
+						style={{
+							borderWidth: 1,
+							borderRadius: 20,
+							borderColor: '#CCC'
+						}}
+						size={50}
+						name="add"
+						color="#CCC"
+					></Icon>
+				</TouchableOpacity>
 			</View>
 		);
 	}

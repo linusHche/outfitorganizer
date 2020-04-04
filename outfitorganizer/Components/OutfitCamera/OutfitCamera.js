@@ -35,7 +35,7 @@ export default function OutfitCamera() {
 				contents
 			});
 			console.log(photo);
-			const response = await fetch(`${API_ADDRESS}/api/upload`);
+			const response = await fetch(`${API_ADDRESS}/upload`);
 			let value = await response.json();
 			setUrl(value.link);
 		} catch (err) {

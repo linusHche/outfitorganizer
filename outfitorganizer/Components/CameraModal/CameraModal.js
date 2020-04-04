@@ -5,12 +5,6 @@ import OutfitCamera from '../OutfitCamera/OutfitCamera';
 export default class CameraModal extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = {
-			isCameraModalVisible: false
-		};
-	}
-	componentDidMount() {
-		this.setState({ isCameraModalVisible: this.props.visible });
 	}
 	setCameraModalVisible = value => {
 		this.setState({ isCameraModalVisible: value });
@@ -21,7 +15,7 @@ export default class CameraModal extends React.Component {
 				<Modal
 					animationType="slide"
 					transparent={true}
-					visible={this.state.isCameraModalVisible}
+					visible={this.props.visible}
 				>
 					<View
 						style={{
