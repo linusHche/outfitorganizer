@@ -1,22 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import {
-	View,
-	Text,
-	Image,
-	Modal,
-	Button,
-	Dimensions,
-	TouchableOpacity
-} from 'react-native';
-import { API_ADDRESS, DROPBOX_ACCESS_TOKEN } from '../../constants';
+import React, { useState } from 'react';
+import { View, Text, Image, Modal, TouchableOpacity } from 'react-native';
+import { DROPBOX_ACCESS_TOKEN } from '../../constants';
 import { Dropbox } from 'dropbox';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 const dbx = new Dropbox({
 	accessToken: DROPBOX_ACCESS_TOKEN,
-	fetch
+	fetch,
 });
 
-const url = '';
-export default Clothes = () => {
+export default Clothes = ({ clothes }) => {
 	const [isModalVisible, setModalVisible] = useState(false);
 	const [img, setImg] = useState(null);
 
@@ -30,25 +22,30 @@ export default Clothes = () => {
 				<View
 					style={{
 						backgroundColor: 'white',
-						borderRadius: 20,
-						margin: 22,
 						flex: 1,
-						borderWidth: 2
 					}}
 				>
-					<TouchableOpacity onPress={() => setModalVisible(false)}>
-						<Text
+					<TouchableOpacity
+						style={{
+							zIndex: 1,
+							position: 'absolute',
+							right: '5%',
+							top: '5%',
+						}}
+						onPress={() => setModalVisible(false)}
+					>
+						<Icon
 							style={{
-								fontSize: 35,
-								textAlign: 'right',
-								marginRight: 10
+								borderWidth: 1,
+								borderRadius: 20,
+								borderColor: '#CCC',
 							}}
-						>
-							x
-						</Text>
+							size={40}
+							name="close"
+							color="#CCC"
+						></Icon>
 					</TouchableOpacity>
 					<View></View>
-					<Image style={{ flex: 1 }} source={{ uri: url }} />
 					<Text>test</Text>
 				</View>
 			</Modal>
@@ -62,8 +59,8 @@ export default Clothes = () => {
 		>
 			{renderModal()}
 			<View style={{ flex: 1 }}>
-				<Text style={{ marginLeft: 10 }}>Red Hoodie</Text>
-				<Text style={{ marginLeft: 10 }}>Description</Text>
+				<Text style={{ marginLeft: 10 }}>{clothes.name}</Text>
+				<Text style={{ marginLeft: 10 }}>{clothes.description}</Text>
 			</View>
 			<Image
 				style={{
@@ -71,10 +68,10 @@ export default Clothes = () => {
 					height: '100%',
 					borderWidth: 1,
 					borderRadius: 5,
-					borderColor: '#CCC'
+					borderColor: '#CCC',
 				}}
 				source={{
-					uri: url
+					uri: clothes.path,
 				}}
 			/>
 		</TouchableOpacity>

@@ -35,7 +35,7 @@ export default Register = ({ navigation }) => {
 	};
 
 	const processRegister = async () => {
-		const { username, password, confirmPassword } = state;
+		const { username, password } = state;
 		const msg = validateInputs();
 		if (msg) {
 			alert(msg);
@@ -46,17 +46,18 @@ export default Register = ({ navigation }) => {
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({
-				username,
-				password,
-			}),
+			body: JSON.stringify(state),
 		});
 		const value = await response.json();
 		await AsyncStorage.setItem('@token', value.token);
+		await AsyncStorage.setItem('@currentUser', value.user);
+		await AsyncStorage.setItem('@dropbox_token', value.dropbox_token);
 		navigation.navigate('Main');
 	};
 
-	const handleChange = (value) => {
+	const handleChange = async (value) => {
+		const f = await AsyncStorage.getItem('@token');
+		alert(f);
 		setState((prev) => ({ ...prev, ...value }));
 	};
 
