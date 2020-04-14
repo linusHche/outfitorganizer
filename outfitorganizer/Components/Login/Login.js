@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-	TouchableOpacity,
-	Text,
-	View,
-	TextInput,
-	Keyboard,
-	TouchableWithoutFeedback,
-	AsyncStorage,
-} from 'react-native';
+import { TouchableOpacity, Text, View, TextInput, Keyboard, TouchableWithoutFeedback, AsyncStorage } from 'react-native';
 import styles from './LoginStyles';
 import { API_ADDRESS } from '../../constants';
 
@@ -48,7 +40,6 @@ export default function Login({ navigation }) {
 		}
 		await AsyncStorage.setItem('@token', value.token);
 		await AsyncStorage.setItem('@currentUser', value.user.username);
-		await AsyncStorage.setItem('@dropbox_token', value.dropbox_token);
 		navigation.navigate('Main');
 	};
 
@@ -57,33 +48,25 @@ export default function Login({ navigation }) {
 			<View style={{ flex: 1 }}>
 				<Text style={styles.title}>Outfit Organizer</Text>
 				<TextInput
-					autoCapitalize="none"
+					autoCapitalize='none'
 					keyboardAppearance={'dark'}
-					placeholder="Username"
+					placeholder='Username'
 					style={styles.textbox}
 					onChangeText={(text) => handleChange({ username: text })}
 				></TextInput>
 				<TextInput
 					secureTextEntry={true}
 					keyboardAppearance={'dark'}
-					placeholder="Password"
+					placeholder='Password'
 					style={styles.textbox}
 					onChangeText={(text) => handleChange({ password: text })}
 				></TextInput>
-				<TouchableOpacity
-					style={styles.button}
-					title="Press"
-					onPress={processLogin}
-				>
+				<TouchableOpacity style={styles.button} title='Press' onPress={processLogin}>
 					<View style={{ borderWidth: '1', flex: 1 }}>
 						<Text style={styles.text}>Login</Text>
 					</View>
 				</TouchableOpacity>
-				<TouchableOpacity
-					style={[styles.button, { marginTop: 20 }]}
-					title="Press"
-					onPress={() => navigation.navigate('Register')}
-				>
+				<TouchableOpacity style={[styles.button, { marginTop: 20 }]} title='Press' onPress={() => navigation.navigate('Register')}>
 					<View style={{ borderWidth: '1', flex: 1 }}>
 						<Text
 							style={{

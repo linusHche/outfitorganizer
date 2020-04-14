@@ -19,8 +19,6 @@ import OutfitCamera from '../OutfitCamera/OutfitCamera';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as constants from '../../constants';
 import styles from './ClothesMenuStyles';
-import { Dropbox } from 'dropbox';
-const dbx = new Dropbox({ fetch });
 export default class ClothesMenu extends React.Component {
 	state = {
 		loaded: false,
@@ -33,16 +31,9 @@ export default class ClothesMenu extends React.Component {
 	};
 
 	componentDidMount() {
-		this.initializeDropbox();
 		this.fetchImages();
 		this.fetchClothes();
 	}
-
-	initializeDropbox = async () => {
-		if (dbx.getAccessToken()) return;
-		const accessToken = await AsyncStorage.getItem('@dropbox_token');
-		dbx.setAccessToken(accessToken);
-	};
 
 	fetchImages = async () => {
 		await this.setState({ loaded: true });
@@ -59,21 +50,31 @@ export default class ClothesMenu extends React.Component {
 		this.setState({ clothes: value.clothes, loaded: true });
 	};
 
+	updateClothes = async (updatedClothes) => {
+		const token = await AsyncStorage.getItem('@token');
+		const response = await fetch(`${constants.API_ADDRESS}/clothes/${updatedClothes.id}`, {
+			method: 'PUT',
+			headers: {
+				Authorization: token,
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(updatedClothes),
+		});
+		if (response.ok) {
+			let previousClothes = [...this.state.clothes];
+			previousClothes = previousClothes.map((o) => (o.id === updatedClothes.id ? updatedClothes : o));
+			await this.setState({ clothes: previousClothes });
+		}
+	};
+
 	clearInputs = () => {
 		this.setState({ contents: null, name: '', description: '' });
 	};
 
 	renderCameraModal = () => {
 		return (
-			<Modal
-				animationType="fade"
-				transparent={true}
-				visible={this.state.isCameraModalVisible}
-			>
-				<OutfitCamera
-					closeModal={this.toggleCameraModal}
-					takePicture={this.takePicture}
-				/>
+			<Modal animationType='fade' transparent={true} visible={this.state.isCameraModalVisible}>
+				<OutfitCamera closeModal={this.toggleCameraModal} takePicture={this.takePicture} />
 			</Modal>
 		);
 	};
@@ -82,15 +83,8 @@ export default class ClothesMenu extends React.Component {
 		const { contents, isAddClothesModalVisible } = this.state;
 		return (
 			<View style={{ marginTop: 22 }}>
-				<Modal
-					animationType="slide"
-					transparent={true}
-					visible={isAddClothesModalVisible}
-				>
-					<TouchableWithoutFeedback
-						onPress={Keyboard.dismiss}
-						accessible={false}
-					>
+				<Modal animationType='slide' transparent={true} visible={isAddClothesModalVisible}>
+					<TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
 						<View style={{ backgroundColor: 'white', flex: 1 }}>
 							<TouchableOpacity
 								onPress={() => {
@@ -99,33 +93,22 @@ export default class ClothesMenu extends React.Component {
 								}}
 								style={styles.closeButton}
 							>
-								<Icon
-									style={styles.closeButtonIcon}
-									size={40}
-									name="close"
-									color="#CCC"
-								></Icon>
+								<Icon style={styles.closeButtonIcon} size={40} name='close' color='#CCC'></Icon>
 							</TouchableOpacity>
 							<View style={{ marginTop: '10%', flex: 1 }}>
-								<Text style={styles.newItemTitle}>
-									New Item
-								</Text>
+								<Text style={styles.newItemTitle}>New Item</Text>
 								<TextInput
 									keyboardAppearance={'dark'}
-									placeholder="Item Name"
+									placeholder='Item Name'
 									style={[styles.textbox, { flex: 1 }]}
-									onChangeText={(text) =>
-										this.setState({ name: text })
-									}
+									onChangeText={(text) => this.setState({ name: text })}
 								></TextInput>
 								<TextInput
 									keyboardAppearance={'dark'}
-									placeholder="Item Description"
+									placeholder='Item Description'
 									style={[styles.textbox, { flex: 2 }]}
 									multiline={true}
-									onChangeText={(text) =>
-										this.setState({ description: text })
-									}
+									onChangeText={(text) => this.setState({ description: text })}
 								></TextInput>
 								<View style={{ flex: 2 }}></View>
 								<View style={styles.cameraContainer}>
@@ -137,18 +120,12 @@ export default class ClothesMenu extends React.Component {
 										onPress={this.toggleCameraModal}
 									>
 										{contents === null ? (
-											<Text
-												style={styles.cameraContentText}
-											>
-												Add Image
-											</Text>
+											<Text style={styles.cameraContentText}>Add Image</Text>
 										) : (
 											<Image
 												style={{ flex: 1 }}
 												source={{
-													uri:
-														'data:image/jpg;base64,' +
-														contents.base64,
+													uri: 'data:image/jpg;base64,' + contents.base64,
 												}}
 											></Image>
 										)}
@@ -156,13 +133,8 @@ export default class ClothesMenu extends React.Component {
 								</View>
 								<View style={{ flex: 1 }}></View>
 								{this.renderCameraModal()}
-								<TouchableOpacity
-									style={styles.addClothesButton}
-									onPress={this.addNewClothes}
-								>
-									<Text style={styles.addClothesText}>
-										Add New Item
-									</Text>
+								<TouchableOpacity style={styles.addClothesButton} onPress={this.addNewClothes}>
+									<Text style={styles.addClothesText}>Add New Item</Text>
 								</TouchableOpacity>
 							</View>
 						</View>
@@ -183,7 +155,7 @@ export default class ClothesMenu extends React.Component {
 						height: Dimensions.get('window').height / 8,
 					}}
 				>
-					<Clothes clothes={clothes} />
+					<Clothes clothes={clothes} updateClothes={this.updateClothes} />
 				</View>
 			);
 		});
@@ -212,16 +184,9 @@ export default class ClothesMenu extends React.Component {
 			return;
 		}
 		try {
-			const user = await AsyncStorage.getItem('@currentUser');
-			const pictureName = name.replace(' ', '');
-			const path = `/${user}/${pictureName}.jpg`;
-			await dbx.filesUpload({ path, contents });
-			let url = (await dbx.sharingCreateSharedLinkWithSettings({ path }))
-				.url;
-			url = url.slice(0, url.length - 4) + 'raw=1';
 			const token = await AsyncStorage.getItem('@token');
-			let newClothes = { name, description, path: url };
-			await fetch(`${constants.API_ADDRESS}/clothes`, {
+			let newClothes = { name, description, path: contents.base64 };
+			const response = await fetch(`${constants.API_ADDRESS}/clothes`, {
 				method: 'POST',
 				headers: {
 					Authorization: token,
@@ -229,6 +194,9 @@ export default class ClothesMenu extends React.Component {
 				},
 				body: JSON.stringify(newClothes),
 			});
+			const data = await response.json();
+			newClothes.path = data.path;
+			alert(newClothes.path);
 			this.setState({ clothes: [...this.state.clothes, newClothes] });
 		} catch (error) {
 			alert('An item with this name already exists');
@@ -241,7 +209,7 @@ export default class ClothesMenu extends React.Component {
 		if (this.state.loaded !== true)
 			return (
 				<View style={{ flex: 1, justifyContent: 'center' }}>
-					<ActivityIndicator size="large" color="#CCC" />
+					<ActivityIndicator size='large' color='#CCC' />
 				</View>
 			);
 		return (
@@ -266,8 +234,8 @@ export default class ClothesMenu extends React.Component {
 							borderColor: '#CCC',
 						}}
 						size={50}
-						name="add"
-						color="#CCC"
+						name='add'
+						color='#CCC'
 					></Icon>
 				</TouchableOpacity>
 			</View>

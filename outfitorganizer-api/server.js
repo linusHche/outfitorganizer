@@ -9,11 +9,7 @@ module.exports = (pg, bcrypt) => {
 	router.use('/user', require('./routes/user')(pg));
 	router.use('/signin', require('./routes/signin')(pg, bcrypt, jwt));
 	router.use('/register', require('./routes/register')(pg, bcrypt, jwt));
-	router.use(
-		'/clothes',
-		middleware.verifyToken,
-		require('./routes/clothes')(pg)
-	);
+	router.use('/clothes', middleware.verifyToken, require('./routes/clothes')(pg, dbx));
 	router.get('/', (req, res) => {
 		pg.select()
 			.table('user')
@@ -21,10 +17,5 @@ module.exports = (pg, bcrypt) => {
 			.then((data) => console.log(data));
 	});
 
-	router.get('/upload', (req, res) => {
-		dbx.sharingCreateSharedLinkWithSettings({
-			path: '/testfolder/test-image.jpg',
-		}).then((response) => console.log(response.url));
-	});
 	return router;
 };

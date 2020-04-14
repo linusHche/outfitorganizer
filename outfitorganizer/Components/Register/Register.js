@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-import {
-	TouchableOpacity,
-	Text,
-	View,
-	TextInput,
-	Keyboard,
-	TouchableWithoutFeedback,
-	AsyncStorage,
-} from 'react-native';
+import { TouchableOpacity, Text, View, TextInput, Keyboard, TouchableWithoutFeedback, AsyncStorage } from 'react-native';
 import styles from './RegisterStyles';
 import { API_ADDRESS } from '../../constants';
 
@@ -21,15 +13,10 @@ export default Register = ({ navigation }) => {
 	const validateInputs = () => {
 		const { username, password, confirmPassword } = state;
 		let msg = null;
-		if (
-			username.indexOf(' ') >= 0 ||
-			password.indexOf(' ') >= 0 ||
-			confirmPassword.indexOf(' ') >= 0
-		)
+		if (username.indexOf(' ') >= 0 || password.indexOf(' ') >= 0 || confirmPassword.indexOf(' ') >= 0)
 			msg = 'Spaces are not allowed in any fields';
 
-		if (username === '' || password === '' || confirmPassword === '')
-			msg = 'At least one of the fields is empty';
+		if (username === '' || password === '' || confirmPassword === '') msg = 'At least one of the fields is empty';
 		if (password !== confirmPassword) msg = 'Passwords do not match';
 		return msg;
 	};
@@ -51,7 +38,6 @@ export default Register = ({ navigation }) => {
 		const value = await response.json();
 		await AsyncStorage.setItem('@token', value.token);
 		await AsyncStorage.setItem('@currentUser', value.user);
-		await AsyncStorage.setItem('@dropbox_token', value.dropbox_token);
 		navigation.navigate('Main');
 	};
 
@@ -65,33 +51,27 @@ export default Register = ({ navigation }) => {
 		<TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
 			<View style={{ flex: 1, marginTop: '25%' }}>
 				<TextInput
-					autoCapitalize="none"
+					autoCapitalize='none'
 					keyboardAppearance={'dark'}
-					placeholder="Username"
+					placeholder='Username'
 					style={styles.textbox}
 					onChangeText={(text) => handleChange({ username: text })}
 				></TextInput>
 				<TextInput
 					secureTextEntry={true}
 					keyboardAppearance={'dark'}
-					placeholder="Password"
+					placeholder='Password'
 					style={styles.textbox}
 					onChangeText={(text) => handleChange({ password: text })}
 				></TextInput>
 				<TextInput
 					secureTextEntry={true}
 					keyboardAppearance={'dark'}
-					placeholder="Confirm Password"
+					placeholder='Confirm Password'
 					style={styles.textbox}
-					onChangeText={(text) =>
-						handleChange({ confirmPassword: text })
-					}
+					onChangeText={(text) => handleChange({ confirmPassword: text })}
 				></TextInput>
-				<TouchableOpacity
-					style={styles.button}
-					title="Press"
-					onPress={processRegister}
-				>
+				<TouchableOpacity style={styles.button} title='Press' onPress={processRegister}>
 					<View style={{ borderWidth: '1', flex: 1 }}>
 						<Text style={styles.text}>Register</Text>
 					</View>

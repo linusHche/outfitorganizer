@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Camera } from 'expo-camera';
-import {
-	View,
-	Text,
-	Platform,
-	Image,
-	TouchableOpacity,
-	Dimensions,
-} from 'react-native';
+import { View, Text, Platform, Image, TouchableOpacity, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 export default function OutfitCamera(props) {
@@ -26,10 +19,7 @@ export default function OutfitCamera(props) {
 				base64: true,
 			});
 		let contents = {
-			uri:
-				Platform.OS === 'ios'
-					? data.uri.replace('file://', '')
-					: data.uri,
+			uri: Platform.OS === 'ios' ? data.uri.replace('file://', '') : data.uri,
 			name: 'picture.jpg',
 			type: 'image/jpg',
 			base64: data.base64,
@@ -53,10 +43,7 @@ export default function OutfitCamera(props) {
 						flexDirection: 'row',
 					}}
 				>
-					<TouchableOpacity
-						style={{ position: 'absolute', right: '5%', top: '5%' }}
-						onPress={props.closeModal}
-					>
+					<TouchableOpacity style={{ position: 'absolute', right: '5%', top: '5%' }} onPress={props.closeModal}>
 						<Icon
 							style={{
 								borderWidth: 1,
@@ -64,8 +51,8 @@ export default function OutfitCamera(props) {
 								borderColor: '#CCC',
 							}}
 							size={40}
-							name="close"
-							color="#CCC"
+							name='close'
+							color='#CCC'
 						></Icon>
 					</TouchableOpacity>
 					<TouchableOpacity
@@ -82,7 +69,7 @@ export default function OutfitCamera(props) {
 								borderColor: '#CCC',
 							}}
 							size={80}
-							color="#CCC"
+							color='#CCC'
 						>
 							blur_circular
 						</Icon>
