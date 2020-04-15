@@ -1,59 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { Camera } from 'expo-camera';
-import { API_ADDRESS, DROPBOX_ACCESS_TOKEN } from '../../constants';
-import { View, Button, Platform, Image } from 'react-native';
-import { Dropbox } from 'dropbox';
-const dbx = new Dropbox({
-	accessToken: DROPBOX_ACCESS_TOKEN,
-	fetch
-});
+import { View, Text, Platform, Image, TouchableOpacity, Dimensions } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-export default function OutfitCamera() {
+export default function OutfitCamera(props) {
 	const [url, setUrl] = useState();
 	const [camera, setCamera] = useState(null);
-	useEffect(async () => {
-		await Camera.requestPermissionsAsync();
+	useEffect(() => {
+		(async () => {
+			await Camera.requestPermissionsAsync();
+		})();
 	}, []);
 
 	const takePhoto = async () => {
 		if (camera)
 			var data = await camera.takePictureAsync({
 				quality: 0.5,
-				base64: true
+				base64: true,
 			});
 		let contents = {
-			uri:
-				Platform.OS === 'ios'
-					? data.uri.replace('file://', '')
-					: data.uri,
+			uri: Platform.OS === 'ios' ? data.uri.replace('file://', '') : data.uri,
 			name: 'picture.jpg',
-			type: 'image/jpg'
+			type: 'image/jpg',
+			base64: data.base64,
 		};
-		try {
-			const photo = await dbx.filesUpload({
-				path: '/testfolder/test-image.jpg',
-				contents
-			});
-			console.log(photo);
-			const response = await fetch(`${API_ADDRESS}/upload`);
-			let value = await response.json();
-			setUrl(value.link);
-		} catch (err) {
-			console.error(err);
-		}
+		props.takePicture(contents);
+		props.closeModal();
 	};
 
 	return (
 		<View style={{ flex: 1 }}>
-			<Image
-				style={{ width: 200, height: 200 }}
-				source={{
-					uri: url
-				}}
-			/>
 			<Camera
-				style={{ flex: 1 }}
-				ref={ref => {
+				style={{ flex: 1, justifyContent: 'space-between' }}
+				ref={(ref) => {
 					setCamera(ref);
 				}}
 			>
@@ -61,11 +40,42 @@ export default function OutfitCamera() {
 					style={{
 						flex: 1,
 						backgroundColor: 'transparent',
-						flexDirection: 'row'
+						flexDirection: 'row',
 					}}
-				></View>
+				>
+					<TouchableOpacity style={{ position: 'absolute', right: '5%', top: '5%' }} onPress={props.closeModal}>
+						<Icon
+							style={{
+								borderWidth: 1,
+								borderRadius: 20,
+								borderColor: '#CCC',
+							}}
+							size={40}
+							name='close'
+							color='#CCC'
+						></Icon>
+					</TouchableOpacity>
+					<TouchableOpacity
+						style={{
+							bottom: 40,
+							position: 'absolute',
+							left: Dimensions.get('window').width / 2 - 40,
+						}}
+						onPress={() => takePhoto()}
+					>
+						<Icon
+							style={{
+								borderRadius: 20,
+								borderColor: '#CCC',
+							}}
+							size={80}
+							color='#CCC'
+						>
+							blur_circular
+						</Icon>
+					</TouchableOpacity>
+				</View>
 			</Camera>
-			<Button onPress={takePhoto} title="Take Photo"></Button>
 		</View>
 	);
 }

@@ -1,80 +1,88 @@
-import React, { useEffect, useState } from 'react';
-import {
-	View,
-	Text,
-	Image,
-	Modal,
-	Button,
-	Dimensions,
-	TouchableOpacity
-} from 'react-native';
-import { API_ADDRESS, DROPBOX_ACCESS_TOKEN } from '../../constants';
-import { Dropbox } from 'dropbox';
-const dbx = new Dropbox({
-	accessToken: DROPBOX_ACCESS_TOKEN,
-	fetch
-});
+import React, { useState } from 'react';
+import { View, TextInput, Text, Alert, Image, Modal, TouchableOpacity, ShadowPropTypesIOS } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import styles from './ClothesStyles';
 
-const url = '';
-export default Clothes = () => {
+export default Clothes = ({ clothes, updateClothes, deleteClothes }) => {
 	const [isModalVisible, setModalVisible] = useState(false);
-	const [img, setImg] = useState(null);
+	const [name, setName] = useState(clothes.name);
+	const [description, setDescription] = useState(clothes.description);
+
+	const handleCloseAndUpdate = () => {
+		setModalVisible(false);
+		if (clothes.name !== name || clothes.description !== description)
+			updateClothes({ id: clothes.id, previousName: clothes.name, name, description, path: clothes.path });
+	};
+
+	const handleDeleteAndClose = async () => {
+		setModalVisible(false);
+		await deleteClothes(clothes.id);
+	};
 
 	const renderModal = () => {
 		return (
-			<Modal
-				animationType="slide"
-				transparent={true}
-				visible={isModalVisible}
-			>
+			<Modal animationType='slide' transparent={true} visible={isModalVisible}>
 				<View
 					style={{
 						backgroundColor: 'white',
-						borderRadius: 20,
-						margin: 22,
 						flex: 1,
-						borderWidth: 2
 					}}
 				>
-					<TouchableOpacity onPress={() => setModalVisible(false)}>
-						<Text
-							style={{
-								fontSize: 35,
-								textAlign: 'right',
-								marginRight: 10
-							}}
-						>
-							x
-						</Text>
+					<TouchableOpacity style={styles.closeButton} onPress={handleCloseAndUpdate}>
+						<Icon style={styles.closeButtonIcon} size={40} name='close' color='#CCC'></Icon>
 					</TouchableOpacity>
-					<View></View>
-					<Image style={{ flex: 1 }} source={{ uri: url }} />
-					<Text>test</Text>
+					<View style={{ flex: 1 }}>
+						<View style={{ flex: 1 }}></View>
+						<TextInput style={styles.textbox} value={name} onChangeText={(text) => setName(text)}></TextInput>
+						<TextInput
+							multiline={true}
+							style={styles.textbox}
+							onChangeText={(text) => setDescription(text)}
+							value={description}
+						></TextInput>
+						<Image
+							style={styles.image}
+							source={{
+								uri: clothes.path,
+							}}
+						/>
+						<TouchableOpacity
+							onPress={() =>
+								Alert.alert('Confirm Delete', 'Are you sure you want to delete this item?', [
+									{ text: 'Confirm', onPress: handleDeleteAndClose },
+									{ text: 'Cancel' },
+								])
+							}
+							style={{ justifyContent: 'center', backgroundColor: 'red', flex: 1 }}
+						>
+							<Text
+								style={{
+									fontSize: 20,
+									fontFamily: 'American Typewriter',
+									textAlign: 'center',
+									color: 'white',
+								}}
+							>
+								Delete
+							</Text>
+						</TouchableOpacity>
+					</View>
 				</View>
 			</Modal>
 		);
 	};
 
 	return (
-		<TouchableOpacity
-			style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}
-			onPress={() => setModalVisible(true)}
-		>
+		<TouchableOpacity style={styles.clothesEditButton} onPress={() => setModalVisible(true)}>
 			{renderModal()}
 			<View style={{ flex: 1 }}>
-				<Text style={{ marginLeft: 10 }}>Red Hoodie</Text>
-				<Text style={{ marginLeft: 10 }}>Description</Text>
+				<Text style={{ marginLeft: 10 }}>{clothes.name}</Text>
+				<Text style={{ marginLeft: 10 }}>{clothes.description}</Text>
 			</View>
 			<Image
-				style={{
-					width: '25%',
-					height: '100%',
-					borderWidth: 1,
-					borderRadius: 5,
-					borderColor: '#CCC'
-				}}
+				style={styles.thumbnail}
 				source={{
-					uri: url
+					uri: clothes.path,
 				}}
 			/>
 		</TouchableOpacity>

@@ -2,25 +2,25 @@ const express = require('express');
 const router = express.Router();
 
 module.exports = (pg, bcrypt, jwt) => {
-	const signJWT = (name) => {
-		return (
-			'Bearer ' +
-			jwt.sign({ name }, process.env.SECRET_KEY, { expiresIn: '1h' })
-		);
+	const signJWT = (name, id) => {
+		return 'Bearer ' + jwt.sign({ name, id }, process.env.SECRET_KEY, { expiresIn: '1h' });
 	};
 	router.post('/', async (req, res) => {
-		const loginUser = await pg('user')
-			.where('name', req.body.username)
-			.first();
+		const { username, password } = req.body;
+		const loginUser = await pg('user').where('username', username).first();
 		if (loginUser === undefined) {
 			return res.status(404).json('User not found');
 		}
-		const result = await bcrypt.compare(req.body.password, loginUser.hash);
+		const result = await bcrypt.compare(password, loginUser.hash);
 		if (result === true) {
-			const token = signJWT(req.body.username);
-			return res.json({ token });
+			loginUser.hash = '';
+			const token = signJWT(username, loginUser.id);
+			return res.json({
+				token,
+				user: loginUser,
+			});
 		}
-		return res.status(403).json('Incorrect password');
+		return res.status(403).json({ msg: 'Incorrect username or password' });
 	});
 	return router;
 };
