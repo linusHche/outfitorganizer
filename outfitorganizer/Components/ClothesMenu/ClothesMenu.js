@@ -31,13 +31,10 @@ export default class ClothesMenu extends React.Component {
 	};
 
 	componentDidMount() {
-		this.fetchImages();
 		this.fetchClothes();
 	}
 
-	fetchImages = async () => {
-		await this.setState({ loaded: true });
-	};
+	fetchImages = async () => {};
 
 	fetchClothes = async () => {
 		const token = await AsyncStorage.getItem('@token');
@@ -47,7 +44,8 @@ export default class ClothesMenu extends React.Component {
 			},
 		});
 		const value = await response.json();
-		this.setState({ clothes: value.clothes, loaded: true });
+		this.setState({ clothes: value.clothes });
+		await this.setState({ loaded: true });
 	};
 
 	updateClothes = async (updatedClothes) => {
@@ -65,6 +63,20 @@ export default class ClothesMenu extends React.Component {
 			previousClothes = previousClothes.map((o) => (o.id === updatedClothes.id ? updatedClothes : o));
 			await this.setState({ clothes: previousClothes });
 		}
+	};
+
+	deleteClothes = async (clothesId) => {
+		const token = await AsyncStorage.getItem('@token');
+		await fetch(`${constants.API_ADDRESS}/clothes/${clothesId}`, {
+			method: 'DELETE',
+			headers: {
+				Authorization: token,
+				'Content-Type': 'application/json',
+			},
+		});
+		let previousClothes = [...this.state.clothes];
+		previousClothes = previousClothes.filter((o) => o.id === clothesId);
+		await this.setState({ clothes: previousClothes });
 	};
 
 	clearInputs = () => {
@@ -155,7 +167,7 @@ export default class ClothesMenu extends React.Component {
 						height: Dimensions.get('window').height / 8,
 					}}
 				>
-					<Clothes clothes={clothes} updateClothes={this.updateClothes} />
+					<Clothes clothes={clothes} updateClothes={this.updateClothes} deleteClothes={this.deleteClothes}></Clothes>
 				</View>
 			);
 		});
@@ -196,7 +208,6 @@ export default class ClothesMenu extends React.Component {
 			});
 			const data = await response.json();
 			newClothes.path = data.path;
-			alert(newClothes.path);
 			this.setState({ clothes: [...this.state.clothes, newClothes] });
 		} catch (error) {
 			alert('An item with this name already exists');

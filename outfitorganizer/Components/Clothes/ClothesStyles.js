@@ -24,7 +24,6 @@ export default StyleSheet.create({
 		marginVertical: '10%',
 		alignSelf: 'center',
 		width: '90%',
-		height: '50%',
 		borderWidth: 1,
 		borderRadius: 5,
 		borderColor: '#CCC',
