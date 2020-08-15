@@ -10,6 +10,7 @@ module.exports = (pg, bcrypt) => {
 	router.use('/signin', require('./routes/signin')(pg, bcrypt, jwt));
 	router.use('/register', require('./routes/register')(pg, bcrypt, jwt));
 	router.use('/clothes', middleware.verifyToken, require('./routes/clothes')(pg, dbx));
+	router.use('/outfit', middleware.verifyToken, require('./routes/outfit')(pg));
 	router.get('/', async (req, res) => {});
 
 	return router;

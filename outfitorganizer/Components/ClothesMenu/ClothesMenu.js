@@ -122,7 +122,6 @@ export default class ClothesMenu extends React.Component {
 									multiline={true}
 									onChangeText={(text) => this.setState({ description: text })}
 								></TextInput>
-								<View style={{ flex: 2 }}></View>
 								<View style={styles.cameraContainer}>
 									<TouchableOpacity
 										style={{
@@ -143,7 +142,7 @@ export default class ClothesMenu extends React.Component {
 										)}
 									</TouchableOpacity>
 								</View>
-								<View style={{ flex: 1 }}></View>
+								<View style={{ flex: 0.5 }}></View>
 								{this.renderCameraModal()}
 								<TouchableOpacity style={styles.addClothesButton} onPress={this.addNewClothes}>
 									<Text style={styles.addClothesText}>Add New Item</Text>
@@ -167,7 +166,7 @@ export default class ClothesMenu extends React.Component {
 						height: Dimensions.get('window').height / 8,
 					}}
 				>
-					<Clothes clothes={clothes} updateClothes={this.updateClothes} deleteClothes={this.deleteClothes}></Clothes>
+					<Clothes clothes={clothes} updateClothes={this.updateClothes} deleteClothes={this.deleteClothes} viewOnly={false}></Clothes>
 				</View>
 			);
 		});
