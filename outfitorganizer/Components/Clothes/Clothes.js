@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, Alert, Image, Modal, TouchableOpacity, ShadowPropTypesIOS } from 'react-native';
+import { View, TextInput, Text, Alert, Image, Modal, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import styles from './ClothesStyles';
 
-export default Clothes = ({ clothes, updateClothes, deleteClothes }) => {
+export default Clothes = ({ clothes, updateClothes, deleteClothes, viewOnly, handlePress }) => {
 	const [isModalVisible, setModalVisible] = useState(false);
 	const [name, setName] = useState(clothes.name);
 	const [description, setDescription] = useState(clothes.description);
 
 	const handleCloseAndUpdate = () => {
 		setModalVisible(false);
-		if (clothes.name !== name || clothes.description !== description)
+		if ((clothes.name !== name || clothes.description !== description) && viewOnly === false)
 			updateClothes({ id: clothes.id, previousName: clothes.name, name, description, path: clothes.path });
 	};
 
 	const handleDeleteAndClose = async () => {
 		setModalVisible(false);
-		await deleteClothes(clothes.id);
+		if (viewOnly === false) await deleteClothes(clothes.id);
 	};
 
 	const renderModal = () => {
@@ -31,8 +31,29 @@ export default Clothes = ({ clothes, updateClothes, deleteClothes }) => {
 					<TouchableOpacity style={styles.closeButton} onPress={handleCloseAndUpdate}>
 						<Icon style={styles.closeButtonIcon} size={40} name='close' color='#CCC'></Icon>
 					</TouchableOpacity>
+					<TouchableOpacity
+						onPress={() =>
+							Alert.alert('Confirm Delete', 'Are you sure you want to delete this item?', [
+								{ text: 'Confirm', onPress: handleDeleteAndClose },
+								{ text: 'Cancel' },
+							])
+						}
+						style={styles.deleteButton}
+					>
+						<Icon size={40} name='delete' color='red'></Icon>
+					</TouchableOpacity>
 					<View style={{ flex: 1 }}>
-						<View style={{ flex: 1 }}></View>
+						<Text
+							style={{
+								marginTop: '10%',
+								flex: 1,
+								textAlign: 'center',
+								fontSize: 30,
+								fontFamily: 'American Typewriter',
+							}}
+						>
+							Edit Clothes
+						</Text>
 						<TextInput style={styles.textbox} value={name} onChangeText={(text) => setName(text)}></TextInput>
 						<TextInput
 							multiline={true}
@@ -46,25 +67,8 @@ export default Clothes = ({ clothes, updateClothes, deleteClothes }) => {
 								uri: clothes.path,
 							}}
 						/>
-						<TouchableOpacity
-							onPress={() =>
-								Alert.alert('Confirm Delete', 'Are you sure you want to delete this item?', [
-									{ text: 'Confirm', onPress: handleDeleteAndClose },
-									{ text: 'Cancel' },
-								])
-							}
-							style={{ justifyContent: 'center', backgroundColor: 'red', flex: 1 }}
-						>
-							<Text
-								style={{
-									fontSize: 20,
-									fontFamily: 'American Typewriter',
-									textAlign: 'center',
-									color: 'white',
-								}}
-							>
-								Delete
-							</Text>
+						<TouchableOpacity style={styles.clothesSaveButton} onPress={handleCloseAndUpdate}>
+							<Text style={{ textAlign: 'center' }}>Save Clothes</Text>
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -73,7 +77,16 @@ export default Clothes = ({ clothes, updateClothes, deleteClothes }) => {
 	};
 
 	return (
-		<TouchableOpacity style={styles.clothesEditButton} onPress={() => setModalVisible(true)}>
+		<TouchableOpacity
+			style={styles.clothesEditButton}
+			onPress={() => {
+				if (viewOnly === false) {
+					setModalVisible(true);
+				} else if (handlePress !== null) {
+					handlePress(clothes);
+				}
+			}}
+		>
 			{renderModal()}
 			<View style={{ flex: 1 }}>
 				<Text style={{ marginLeft: 10 }}>{clothes.name}</Text>

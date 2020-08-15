@@ -1,7 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const Knex = require('knex');
 
-module.exports = (pg, dbx) => {
+/**
+ * @param {Knex} pg
+ * @param {DropboxTypes.Dropbox} dbx
+ */
+function clothes(pg, dbx) {
 	router.get('/', async (req, res) => {
 		const currentUser = req.decoded;
 		try {
@@ -71,4 +76,6 @@ module.exports = (pg, dbx) => {
 	});
 
 	return router;
-};
+}
+
+module.exports = clothes;

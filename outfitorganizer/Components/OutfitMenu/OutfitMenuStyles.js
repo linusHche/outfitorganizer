@@ -22,32 +22,17 @@ export default StyleSheet.create({
 		fontFamily: 'American Typewriter',
 		fontSize: 15,
 		borderBottomWidth: 2,
-		marginVertical: '5%',
 		marginHorizontal: 10,
+		marginBottom: 10,
+	},
+	newOutfitTitle: {
 		flex: 1,
+		textAlign: 'center',
+		fontSize: 30,
+		fontFamily: 'American Typewriter',
 	},
-	image: {
-		marginVertical: '10%',
-		alignSelf: 'center',
-		width: '90%',
-		borderWidth: 1,
-		borderRadius: 5,
-		borderColor: '#CCC',
-		flex: 7,
-	},
-	clothesEditButton: {
-		flex: 1,
-		flexDirection: 'row',
-		alignItems: 'center',
-	},
-	thumbnail: {
-		width: '25%',
-		height: '100%',
-		borderWidth: 1,
-		borderRadius: 5,
-		borderColor: '#CCC',
-	},
-	clothesSaveButton: {
+
+	addNewClothesBtn: {
 		flex: 1,
 		justifyContent: 'center',
 		borderColor: 'black',

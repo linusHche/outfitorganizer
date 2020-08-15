@@ -5,13 +5,7 @@ export default StyleSheet.create({
 		zIndex: 1,
 		position: 'absolute',
 		right: '5%',
-		top: '5%',
-	},
-	deleteButton: {
-		zIndex: 1,
-		position: 'absolute',
-		left: '5%',
-		top: '5%',
+		top: '2.5%',
 	},
 	closeButtonIcon: {
 		borderWidth: 1,
@@ -35,7 +29,7 @@ export default StyleSheet.create({
 		borderColor: '#CCC',
 		flex: 7,
 	},
-	clothesEditButton: {
+	outfitEditButton: {
 		flex: 1,
 		flexDirection: 'row',
 		alignItems: 'center',
@@ -47,12 +41,18 @@ export default StyleSheet.create({
 		borderRadius: 5,
 		borderColor: '#CCC',
 	},
-	clothesSaveButton: {
+	addNewClothesBtn: {
 		flex: 1,
 		justifyContent: 'center',
 		borderColor: 'black',
 		borderWidth: 1,
 		borderRadius: 20,
 		marginBottom: 5,
+	},
+	saveOutfitTitle: {
+		flex: 1,
+		textAlign: 'center',
+		fontSize: 30,
+		fontFamily: 'American Typewriter',
 	},
 });
