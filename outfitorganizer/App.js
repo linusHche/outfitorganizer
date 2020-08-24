@@ -6,6 +6,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import Login from './Components/Login/Login';
 import Register from './Components/Register/Register';
 const Stack = createStackNavigator();
+import { Provider } from 'react-redux';
+import configureStore from './store';
+const store = configureStore();
 export default class App extends React.Component {
 	async componentDidMount() {
 		const keys = await AsyncStorage.getAllKeys();
@@ -15,25 +18,21 @@ export default class App extends React.Component {
 	}
 	render() {
 		return (
-			<NavigationContainer>
-				<Stack.Navigator
-					initialRouteName="Login"
-					screenOptions={{
-						headerShown: false,
-						gestureEnabled: false,
-					}}
-				>
-					<Stack.Screen name="Login" component={Login}></Stack.Screen>
-					<Stack.Screen
-						name="Register"
-						component={Register}
-					></Stack.Screen>
-					<Stack.Screen
-						name="Main"
-						component={MainScreen}
-					></Stack.Screen>
-				</Stack.Navigator>
-			</NavigationContainer>
+			<Provider store={store}>
+				<NavigationContainer>
+					<Stack.Navigator
+						initialRouteName='Login'
+						screenOptions={{
+							headerShown: false,
+							gestureEnabled: false,
+						}}
+					>
+						<Stack.Screen name='Login' component={Login}></Stack.Screen>
+						<Stack.Screen name='Register' component={Register}></Stack.Screen>
+						<Stack.Screen name='Main' component={MainScreen}></Stack.Screen>
+					</Stack.Navigator>
+				</NavigationContainer>
+			</Provider>
 		);
 	}
 }

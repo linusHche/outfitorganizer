@@ -10,9 +10,11 @@ function outfit(pg) {
 		const currentUser = req.decoded;
 		const outfits = await pg('outfit').select('*').where('userid', currentUser.id);
 		const outfitIds = outfits.map((outfit) => outfit.id);
-		const combinations = await pg('combination').select('*').whereIn('outfitid', outfitIds);
+		const combinations = await pg('combination')
+			.select('*')
+			.whereIn('outfitid', outfitIds);
 		outfits.forEach((outfit) => {
-			outfit.clothesId = combinations
+			outfit.clothesIds = combinations
 				.filter((combination) => combination.outfitid === outfit.id)
 				.map((filteredCombination) => filteredCombination.clothesid);
 			return outfit;
@@ -24,7 +26,10 @@ function outfit(pg) {
 		const currentUser = req.decoded;
 		const { name, description, combinations } = req.body;
 		await pg.transaction(async (trx) => {
-			const ids = await trx('outfit').insert({ name, userid: currentUser.id, description }, 'id');
+			const ids = await trx('outfit').insert(
+				{ name, userid: currentUser.id, description },
+				'id'
+			);
 
 			combinations.forEach((combination) => {
 				combination.outfitid = ids[0];
