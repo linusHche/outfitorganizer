@@ -4,7 +4,6 @@ import { View, Text, Platform, Image, TouchableOpacity, Dimensions } from 'react
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 export default function OutfitCamera(props) {
-	const [url, setUrl] = useState();
 	const [camera, setCamera] = useState(null);
 	useEffect(() => {
 		(async () => {

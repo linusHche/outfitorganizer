@@ -1,27 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { TouchableOpacity, Text, View, TextInput, Keyboard, TouchableWithoutFeedback, AsyncStorage } from 'react-native';
 import styles from './LoginStyles';
 import { API_ADDRESS } from '../../constants';
+import { connect } from 'react-redux';
+import { inputPassword, inputUsername } from '../../Actions/accountActions';
 
-export default function Login({ navigation }) {
-	const [state, setState] = useState({
-		username: '',
-		password: '',
-	});
-	const validateInputs = () => {
-		const { username, password } = state;
+class Login extends React.Component {
+	validateInputs = () => {
+		const { username, password } = this.props;
 		if (username === '' || password === '') {
 			return 'At least one of the fields is empty';
 		}
 		return null;
 	};
 
-	const handleChange = (value) => {
-		setState((prev) => ({ ...prev, ...value }));
-	};
-
-	const processLogin = async () => {
-		const msg = validateInputs();
+	processLogin = async () => {
+		const { username, password, navigation } = this.props;
+		const msg = this.validateInputs();
 		if (msg) {
 			alert(msg);
 			return;
@@ -31,7 +26,7 @@ export default function Login({ navigation }) {
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify(state),
+			body: JSON.stringify({ username, password }),
 		});
 		const value = await response.json();
 		if (response.status !== 200) {
@@ -43,43 +38,58 @@ export default function Login({ navigation }) {
 		navigation.navigate('Main');
 	};
 
-	return (
-		<TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-			<View style={{ flex: 1 }}>
-				<Text style={styles.title}>Outfit Organizer</Text>
-				<TextInput
-					autoCapitalize='none'
-					keyboardAppearance={'dark'}
-					placeholder='Username'
-					style={styles.textbox}
-					onChangeText={(text) => handleChange({ username: text })}
-				></TextInput>
-				<TextInput
-					secureTextEntry={true}
-					keyboardAppearance={'dark'}
-					placeholder='Password'
-					style={styles.textbox}
-					onChangeText={(text) => handleChange({ password: text })}
-				></TextInput>
-				<TouchableOpacity style={styles.button} title='Press' onPress={processLogin}>
-					<View style={{ borderWidth: '1', flex: 1 }}>
-						<Text style={styles.text}>Login</Text>
-					</View>
-				</TouchableOpacity>
-				<TouchableOpacity style={[styles.button, { marginTop: 20 }]} title='Press' onPress={() => navigation.navigate('Register')}>
-					<View style={{ borderWidth: '1', flex: 1 }}>
-						<Text
-							style={{
-								fontFamily: 'American Typewriter',
-								fontSize: 20,
-								textAlign: 'center',
-							}}
-						>
-							Register
-						</Text>
-					</View>
-				</TouchableOpacity>
-			</View>
-		</TouchableWithoutFeedback>
-	);
+	render() {
+		const { inputUsername, inputPassword, navigation } = this.props;
+		return (
+			<TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+				<View style={{ flex: 1 }}>
+					<Text style={styles.title}>Outfit Organizer</Text>
+					<TextInput
+						autoCapitalize='none'
+						keyboardAppearance={'dark'}
+						placeholder='Username'
+						style={styles.textbox}
+						onChangeText={(text) => inputUsername(text)}
+					></TextInput>
+					<TextInput
+						secureTextEntry={true}
+						keyboardAppearance={'dark'}
+						placeholder='Password'
+						style={styles.textbox}
+						onChangeText={(text) => inputPassword(text)}
+					></TextInput>
+					<TouchableOpacity style={styles.button} title='Press' onPress={this.processLogin}>
+						<View style={{ borderWidth: '1', flex: 1 }}>
+							<Text style={styles.text}>Login</Text>
+						</View>
+					</TouchableOpacity>
+					<TouchableOpacity style={[styles.button, { marginTop: 20 }]} title='Press' onPress={() => navigation.navigate('Register')}>
+						<View style={{ borderWidth: '1', flex: 1 }}>
+							<Text
+								style={{
+									fontFamily: 'American Typewriter',
+									fontSize: 20,
+									textAlign: 'center',
+								}}
+							>
+								Register
+							</Text>
+						</View>
+					</TouchableOpacity>
+				</View>
+			</TouchableWithoutFeedback>
+		);
+	}
 }
+
+const mapStateToProps = (state) => ({
+	username: state.account.username,
+	password: state.account.password,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+	inputUsername: (username) => dispatch(inputUsername(username)),
+	inputPassword: (password) => dispatch(inputPassword(password)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Login);

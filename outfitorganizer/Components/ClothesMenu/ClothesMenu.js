@@ -3,7 +3,6 @@ import {
 	View,
 	Dimensions,
 	ScrollView,
-	ActivityIndicator,
 	TouchableOpacity,
 	AsyncStorage,
 	Modal,
@@ -11,7 +10,6 @@ import {
 	TextInput,
 	TouchableWithoutFeedback,
 	Keyboard,
-	StatusBar,
 	Image,
 } from 'react-native';
 import Clothes from '../Clothes/Clothes';
@@ -19,38 +17,21 @@ import OutfitCamera from '../OutfitCamera/OutfitCamera';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as constants from '../../constants';
 import styles from './ClothesMenuStyles';
-export default class ClothesMenu extends React.Component {
-	state = {
-		loaded: false,
-		isAddClothesModalVisible: false,
-		isCameraModalVisible: false,
-		clothes: [],
-		contents: null,
-		name: '',
-		description: '',
-	};
+import { connect } from 'react-redux';
+import {
+	fetchClothes,
+	clearClothesInputs,
+	inputClothesContents,
+	inputClothesName,
+	inputClothesDescription,
+} from '../../Actions/clothesActions';
+import { toggleAddClothesModal, toggleCameraModal } from '../../Actions/modalActions';
 
-	componentDidMount() {
-		this.fetchClothes();
-	}
-
-	fetchImages = async () => {};
-
-	fetchClothes = async () => {
-		const token = await AsyncStorage.getItem('@token');
-		const response = await fetch(`${constants.API_ADDRESS}/clothes`, {
-			headers: {
-				Authorization: token,
-			},
-		});
-		const value = await response.json();
-		this.setState({ clothes: value.clothes });
-		await this.setState({ loaded: true });
-	};
-
+class ClothesMenu extends React.Component {
 	updateClothes = async (updatedClothes) => {
+		const { fetchClothes } = this.props;
 		const token = await AsyncStorage.getItem('@token');
-		const response = await fetch(`${constants.API_ADDRESS}/clothes/${updatedClothes.id}`, {
+		await fetch(`${constants.API_ADDRESS}/clothes/${updatedClothes.id}`, {
 			method: 'PUT',
 			headers: {
 				Authorization: token,
@@ -58,14 +39,11 @@ export default class ClothesMenu extends React.Component {
 			},
 			body: JSON.stringify(updatedClothes),
 		});
-		if (response.ok) {
-			let previousClothes = [...this.state.clothes];
-			previousClothes = previousClothes.map((o) => (o.id === updatedClothes.id ? updatedClothes : o));
-			await this.setState({ clothes: previousClothes });
-		}
+		fetchClothes();
 	};
 
 	deleteClothes = async (clothesId) => {
+		const { fetchClothes } = this.props;
 		const token = await AsyncStorage.getItem('@token');
 		await fetch(`${constants.API_ADDRESS}/clothes/${clothesId}`, {
 			method: 'DELETE',
@@ -74,38 +52,52 @@ export default class ClothesMenu extends React.Component {
 				'Content-Type': 'application/json',
 			},
 		});
-		let previousClothes = [...this.state.clothes];
-		previousClothes = previousClothes.filter((o) => o.id === clothesId);
-		await this.setState({ clothes: previousClothes });
-	};
-
-	clearInputs = () => {
-		this.setState({ contents: null, name: '', description: '' });
+		fetchClothes();
 	};
 
 	renderCameraModal = () => {
+		const { isCameraModalVisible, toggleCameraModal } = this.props;
 		return (
-			<Modal animationType='fade' transparent={true} visible={this.state.isCameraModalVisible}>
-				<OutfitCamera closeModal={this.toggleCameraModal} takePicture={this.takePicture} />
+			<Modal animationType='fade' transparent={true} visible={isCameraModalVisible}>
+				<OutfitCamera
+					closeModal={() => toggleCameraModal(false)}
+					takePicture={this.takePicture}
+				/>
 			</Modal>
 		);
 	};
 
 	renderAddClothesModal = () => {
-		const { contents, isAddClothesModalVisible } = this.state;
+		const {
+			contents,
+			isAddClothesModalVisible,
+			toggleAddClothesModal,
+			clearClothesInputs,
+			inputClothesName,
+			inputClothesDescription,
+			toggleCameraModal,
+		} = this.props;
 		return (
 			<View style={{ marginTop: 22 }}>
-				<Modal animationType='slide' transparent={true} visible={isAddClothesModalVisible}>
-					<TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+				<Modal
+					animationType='slide'
+					transparent={true}
+					visible={isAddClothesModalVisible}>
+					<TouchableWithoutFeedback
+						onPress={Keyboard.dismiss}
+						accessible={false}>
 						<View style={{ backgroundColor: 'white', flex: 1 }}>
 							<TouchableOpacity
 								onPress={() => {
-									this.toggleAddClothesModal(false);
-									this.clearInputs();
+									toggleAddClothesModal(false);
+									clearClothesInputs();
 								}}
-								style={styles.closeButton}
-							>
-								<Icon style={styles.closeButtonIcon} size={40} name='close' color='#CCC'></Icon>
+								style={styles.closeButton}>
+								<Icon
+									style={styles.closeButtonIcon}
+									size={40}
+									name='close'
+									color='#CCC'></Icon>
 							</TouchableOpacity>
 							<View style={{ marginTop: '10%', flex: 1 }}>
 								<Text style={styles.newItemTitle}>New Item</Text>
@@ -113,39 +105,47 @@ export default class ClothesMenu extends React.Component {
 									keyboardAppearance={'dark'}
 									placeholder='Item Name'
 									style={[styles.textbox, { flex: 1 }]}
-									onChangeText={(text) => this.setState({ name: text })}
-								></TextInput>
+									onChangeText={(text) =>
+										inputClothesName(text)
+									}></TextInput>
 								<TextInput
 									keyboardAppearance={'dark'}
 									placeholder='Item Description'
 									style={[styles.textbox, { flex: 2 }]}
 									multiline={true}
-									onChangeText={(text) => this.setState({ description: text })}
-								></TextInput>
+									onChangeText={(text) =>
+										inputClothesDescription(text)
+									}></TextInput>
 								<View style={styles.cameraContainer}>
 									<TouchableOpacity
 										style={{
 											flex: 1,
 											justifyContent: 'center',
 										}}
-										onPress={this.toggleCameraModal}
-									>
+										onPress={() => toggleCameraModal(true)}>
 										{contents === null ? (
-											<Text style={styles.cameraContentText}>Add Image</Text>
+											<Text style={styles.cameraContentText}>
+												Add Image
+											</Text>
 										) : (
 											<Image
 												style={{ flex: 1 }}
 												source={{
-													uri: 'data:image/jpg;base64,' + contents.base64,
-												}}
-											></Image>
+													uri:
+														'data:image/jpg;base64,' +
+														contents.base64,
+												}}></Image>
 										)}
 									</TouchableOpacity>
 								</View>
 								<View style={{ flex: 0.5 }}></View>
 								{this.renderCameraModal()}
-								<TouchableOpacity style={styles.addClothesButton} onPress={this.addNewClothes}>
-									<Text style={styles.addClothesText}>Add New Item</Text>
+								<TouchableOpacity
+									style={styles.addClothesButton}
+									onPress={this.addNewClothes}>
+									<Text style={styles.addClothesText}>
+										Add New Item
+									</Text>
 								</TouchableOpacity>
 							</View>
 						</View>
@@ -156,7 +156,8 @@ export default class ClothesMenu extends React.Component {
 	};
 
 	renderClothes = () => {
-		return this.state.clothes.map((clothes, index) => {
+		const { clothes } = this.props;
+		return clothes.map((clothes, index) => {
 			return (
 				<View
 					key={index}
@@ -164,32 +165,31 @@ export default class ClothesMenu extends React.Component {
 						borderBottomColor: '#CCC',
 						borderBottomWidth: 0.5,
 						height: Dimensions.get('window').height / 8,
-					}}
-				>
-					<Clothes clothes={clothes} updateClothes={this.updateClothes} deleteClothes={this.deleteClothes} viewOnly={false}></Clothes>
+					}}>
+					<Clothes
+						clothes={clothes}
+						updateClothes={this.updateClothes}
+						deleteClothes={this.deleteClothes}
+						viewOnly={false}></Clothes>
 				</View>
 			);
 		});
 	};
 
-	toggleAddClothesModal = (value) => {
-		this.setState({ isAddClothesModalVisible: value });
-		if (value) StatusBar.setBarStyle('dark-content');
-		else StatusBar.setBarStyle('light-content');
-	};
-
-	toggleCameraModal = () => {
-		this.setState((state, props) => ({
-			isCameraModalVisible: !state.isCameraModalVisible,
-		}));
-	};
-
 	takePicture = (contents) => {
-		this.setState({ contents });
+		const { inputClothesContents } = this.props;
+		inputClothesContents(contents);
 	};
 
 	addNewClothes = async () => {
-		const { name, description, contents } = this.state;
+		const {
+			name,
+			description,
+			contents,
+			fetchClothes,
+			clearClothesInputs,
+			toggleAddClothesModal,
+		} = this.props;
 		if (!name || !description || !contents) {
 			alert('At least one of the fields is missing');
 			return;
@@ -207,21 +207,16 @@ export default class ClothesMenu extends React.Component {
 			});
 			const data = await response.json();
 			newClothes.path = data.path;
-			this.setState({ clothes: [...this.state.clothes, newClothes] });
+			fetchClothes();
 		} catch (error) {
 			alert('An item with this name already exists');
 		}
-		this.clearInputs();
-		this.toggleAddClothesModal(false);
+		clearClothesInputs();
+		toggleAddClothesModal(false);
 	};
 
 	render() {
-		if (this.state.loaded !== true)
-			return (
-				<View style={{ flex: 1, justifyContent: 'center' }}>
-					<ActivityIndicator size='large' color='#CCC' />
-				</View>
-			);
+		const { toggleAddClothesModal } = this.props;
 		return (
 			<View style={{ flex: 1 }}>
 				{this.renderAddClothesModal()}
@@ -235,8 +230,7 @@ export default class ClothesMenu extends React.Component {
 						left: Dimensions.get('window').width / 2 - 25,
 						zIndex: 1,
 					}}
-					onPress={() => this.toggleAddClothesModal(true)}
-				>
+					onPress={() => toggleAddClothesModal(true)}>
 					<Icon
 						style={{
 							borderWidth: 1,
@@ -245,10 +239,28 @@ export default class ClothesMenu extends React.Component {
 						}}
 						size={50}
 						name='add'
-						color='#CCC'
-					></Icon>
+						color='#CCC'></Icon>
 				</TouchableOpacity>
 			</View>
 		);
 	}
 }
+
+const mapStateToProps = (state) => ({
+	isAddClothesModalVisible: state.modal.isAddClothesModalVisible,
+	isCameraModalVisible: state.modal.isCameraModalVisible,
+	...state.clothes,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+	fetchClothes: () => dispatch(fetchClothes()),
+	toggleAddClothesModal: (value) => dispatch(toggleAddClothesModal(value)),
+	toggleCameraModal: (value) => dispatch(toggleCameraModal(value)),
+	clearClothesInputs: () => dispatch(clearClothesInputs()),
+	inputClothesName: (name) => dispatch(inputClothesName(name)),
+	inputClothesContents: (contents) => dispatch(inputClothesContents(contents)),
+	inputClothesDescription: (description) =>
+		dispatch(inputClothesDescription(description)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ClothesMenu);

@@ -16,63 +16,47 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Outfit from '../Outfit/Outfit';
 import styles from './OutfitMenuStyles';
 import * as constants from '../../constants';
+import Clothes from '../Clothes/Clothes';
+import { connect } from 'react-redux';
+import {
+	toggleAddClothesModal,
+	toggleAddOutfitModal,
+	toggleEditOutfitModal,
+} from '../../Actions/modalActions';
+import {
+	fetchOutfits,
+	addClothesToOutfit,
+	removeClothesFromOutfit,
+	inputOutfitName,
+	clearClothesTemplate,
+	selectOutfit,
+} from '../../Actions/outfitActions';
+import { fetchClothes } from '../../Actions/clothesActions';
 
-export default class OutfitMenu extends React.Component {
-	state = {
-		name: '',
-		selectedOutfitId: null,
-		isAddOutfitModalVisible: false,
-		isEditOutfitModalVisible: false,
-		isAddClothesModalVisible: false,
-		allClothes: [],
-		addedClothes: [],
-		outfits: [],
-	};
-
+class OutfitMenu extends React.Component {
 	componentDidMount() {
-		this.fetchAllClothes();
-		this.fetchOutfits();
+		const { fetchOutfits, fetchClothes } = this.props;
+		fetchClothes();
+		fetchOutfits();
 	}
 
-	fetchOutfits = async () => {
-		const token = await AsyncStorage.getItem('@token');
-		const response = await fetch(`${constants.API_ADDRESS}/outfit`, {
-			headers: {
-				Authorization: token,
-			},
-		});
-		const value = await response.json();
-		await this.setState({ outfits: value.outfits });
-	};
-
-	fetchAllClothes = async () => {
-		const token = await AsyncStorage.getItem('@token');
-		const response = await fetch(`${constants.API_ADDRESS}/clothes`, {
-			headers: {
-				Authorization: token,
-			},
-		});
-		const value = await response.json();
-		this.setState({ allClothes: value.clothes });
-	};
-
-	addClothes = (clothes) => {
-		this.setState((state, props) => ({
-			addedClothes: [...state.addedClothes, clothes],
-			isAddClothesModalVisible: false,
-		}));
-	};
-
 	renderAllClothes = () => {
-		return this.renderClothes(this.state.allClothes, this.addClothes);
+		let { addClothesToOutfit, allClothes, toggleAddClothesModal } = this.props;
+		const AddClothesAndClose = (clothes) => {
+			addClothesToOutfit(clothes);
+			toggleAddClothesModal(false);
+		};
+		return this.renderClothes(allClothes, AddClothesAndClose);
 	};
 
 	renderAddedClothes = () => {
-		return this.renderClothes(this.state.addedClothes);
+		const { clothesTemplate } = this.props;
+		return this.renderClothes(clothesTemplate.addedClothes);
 	};
 
-	renderClothes = (clothes, handlePress = null) => {
-		return clothes.map((clothes, index) => {
+	renderClothes = (clothesToRender, handlePress = null) => {
+		const { removeClothesFromOutfit } = this.props;
+		return clothesToRender.map((clothes, index) => {
 			return (
 				<View
 					key={index}
@@ -80,31 +64,35 @@ export default class OutfitMenu extends React.Component {
 						borderBottomColor: '#CCC',
 						borderBottomWidth: 0.5,
 						height: Dimensions.get('window').height / 8,
-					}}
-				>
+					}}>
 					{!handlePress ? (
-						<TouchableOpacity style={{ position: 'absolute', zIndex: 2 }} onPress={() => this.removeClothes(index)}>
+						<TouchableOpacity
+							style={{ position: 'absolute', zIndex: 2 }}
+							onPress={() => removeClothesFromOutfit(index)}>
 							<Icon size={25} name='close' color='#CCC'></Icon>
 						</TouchableOpacity>
 					) : null}
-					<Clothes style={{ zIndex: 1 }} clothes={clothes} handlePress={handlePress}></Clothes>
+					<Clothes
+						style={{ zIndex: 1 }}
+						clothes={clothes}
+						handlePress={handlePress}></Clothes>
 				</View>
 			);
 		});
 	};
 
-	removeClothes = (index) => {
-		let restClothes = [...this.state.addedClothes];
-		restClothes.splice(index, 1);
-		this.setState({ addedClothes: restClothes });
-	};
-
 	createOutfit = async () => {
 		const token = await AsyncStorage.getItem('@token');
+		const {
+			clothesTemplate,
+			toggleAddOutfitModal,
+			clearClothesTemplate,
+			fetchOutfits,
+		} = this.props;
 		let newOutfit = {
-			name: this.state.name,
+			name: clothesTemplate.name,
 			description: '',
-			combinations: this.state.addedClothes.map((value, index) => {
+			combinations: clothesTemplate.addedClothes.map((value, index) => {
 				return {
 					clothesid: value.id,
 					level: index,
@@ -119,25 +107,25 @@ export default class OutfitMenu extends React.Component {
 			},
 			body: JSON.stringify(newOutfit),
 		});
-		await this.toggleAddOutfitModal(false);
-		await this.setState({ name: '', addedClothes: [] });
-		await this.fetchOutfits();
+		toggleAddOutfitModal(false);
+		clearClothesTemplate();
+		fetchOutfits();
 	};
 
 	updateOutfit = async () => {
-		const outfitId = this.state.selectedOutfitId;
+		const { selectedOutfitId, clothesTemplate } = this.props;
 		const token = await AsyncStorage.getItem('@token');
 		let updatedOutfit = {
-			name: this.state.name,
+			name: clothesTemplate.name,
 			description: '',
-			combinations: this.state.addedClothes.map((value, index) => {
+			combinations: clothesTemplate.addedClothes.map((value, index) => {
 				return {
 					clothesid: value.id,
 					level: index,
 				};
 			}),
 		};
-		await fetch(`${constants.API_ADDRESS}/outfit/${outfitId}`, {
+		await fetch(`${constants.API_ADDRESS}/outfit/${selectedOutfitId}`, {
 			method: 'PUT',
 			headers: {
 				Authorization: token,
@@ -145,47 +133,56 @@ export default class OutfitMenu extends React.Component {
 			},
 			body: JSON.stringify(updatedOutfit),
 		});
-		await this.handleOutfitChange();
+		this.handleOutfitChange();
 	};
 
 	deleteOutfit = async () => {
-		const outfitId = this.state.selectedOutfitId;
+		const { selectedOutfitId } = this.props;
 		const token = await AsyncStorage.getItem('@token');
-		await fetch(`${constants.API_ADDRESS}/outfit/${outfitId}`, {
+		await fetch(`${constants.API_ADDRESS}/outfit/${selectedOutfitId}`, {
 			method: 'DELETE',
 			headers: {
 				Authorization: token,
 				'Content-Type': 'application/json',
 			},
 		});
-		await this.handleOutfitChange();
+		this.handleOutfitChange();
 	};
 
-	handleOutfitChange = async () => {
-		await this.toggleEditOutfitModal(false);
-		await this.setState({ name: '', addedClothes: [], selectedOutfitId: null });
-		await this.fetchOutfits();
+	handleOutfitChange = () => {
+		const { toggleEditOutfitModal, clearClothesTemplate, fetchOutfits } = this.props;
+		toggleEditOutfitModal(false);
+		clearClothesTemplate();
+		fetchOutfits();
 	};
 
 	renderSharedOutfitModal = (title, handleSave) => {
+		const { inputOutfitName, toggleAddClothesModal, clothesTemplate } = this.props;
 		return (
 			<View style={{ marginTop: '10%', flex: 1 }}>
 				<Text style={styles.newOutfitTitle}>{title}</Text>
 				<TextInput
 					keyboardAppearance={'dark'}
 					placeholder='Outfit Name'
-					value={this.state.name}
+					value={clothesTemplate.name}
 					style={[styles.textbox, { flex: 1 }]}
-					onChangeText={(text) => this.setState({ name: text })}
-				></TextInput>
+					onChangeText={(text) => inputOutfitName(text)}></TextInput>
 				<View style={{ flex: 8 }}>
 					<Text style={{ textAlign: 'center', fontSize: 25 }}>Layers</Text>
-					<ScrollView style={{ borderColor: 'light gray', borderLeftWidth: 1, borderRightWidth: 1, marginHorizontal: 5 }}>
+					<ScrollView
+						style={{
+							borderColor: 'light gray',
+							borderLeftWidth: 1,
+							borderRightWidth: 1,
+							marginHorizontal: 5,
+						}}>
 						<View style={{ flex: 1 }}>{this.renderAddedClothes()}</View>
 					</ScrollView>
 				</View>
 				<View style={{ flex: 1 }}></View>
-				<TouchableOpacity style={styles.addNewClothesBtn} onPress={() => this.toggleAddClothesModal(true)}>
+				<TouchableOpacity
+					style={styles.addNewClothesBtn}
+					onPress={() => toggleAddClothesModal(true)}>
 					<Text style={{ textAlign: 'center' }}>Add New Clothes</Text>
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.addNewClothesBtn} onPress={handleSave}>
@@ -196,21 +193,32 @@ export default class OutfitMenu extends React.Component {
 		);
 	};
 	renderAddOutfitModal = () => {
-		const { isAddOutfitModalVisible } = this.state;
+		const { isAddOutfitModalVisible, toggleAddOutfitModal } = this.props;
 		return (
 			<View style={{ marginTop: 22, zIndex: 2 }}>
-				<Modal animationType='slide' transparent={true} visible={isAddOutfitModalVisible}>
-					<TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+				<Modal
+					animationType='slide'
+					transparent={true}
+					visible={isAddOutfitModalVisible}>
+					<TouchableWithoutFeedback
+						onPress={Keyboard.dismiss}
+						accessible={false}>
 						<View style={{ backgroundColor: 'white', flex: 1 }}>
 							<TouchableOpacity
 								onPress={() => {
-									this.toggleAddOutfitModal(false);
+									toggleAddOutfitModal(false);
 								}}
-								style={styles.closeButton}
-							>
-								<Icon style={styles.closeButtonIcon} size={40} name='close' color='#CCC'></Icon>
+								style={styles.closeButton}>
+								<Icon
+									style={styles.closeButtonIcon}
+									size={40}
+									name='close'
+									color='#CCC'></Icon>
 							</TouchableOpacity>
-							{this.renderSharedOutfitModal('New Outfit', this.createOutfit)}
+							{this.renderSharedOutfitModal(
+								'New Outfit',
+								this.createOutfit
+							)}
 						</View>
 					</TouchableWithoutFeedback>
 				</Modal>
@@ -219,46 +227,71 @@ export default class OutfitMenu extends React.Component {
 	};
 
 	renderEditOutfitModal = () => {
-		let { isEditOutfitModalVisible } = this.state;
+		const {
+			isEditOutfitModalVisible,
+			toggleEditOutfitModal,
+			clearClothesTemplate,
+		} = this.props;
 		return (
-			<Modal animationType='slide' transparent={true} visible={isEditOutfitModalVisible}>
+			<Modal
+				animationType='slide'
+				transparent={true}
+				visible={isEditOutfitModalVisible}>
 				<View
 					style={{
 						backgroundColor: 'white',
 						flex: 1,
-					}}
-				>
-					<TouchableOpacity style={styles.closeButton} onPress={() => this.toggleEditOutfitModal(false)}>
-						<Icon style={styles.closeButtonIcon} size={40} name='close' color='#CCC'></Icon>
+					}}>
+					<TouchableOpacity
+						style={styles.closeButton}
+						onPress={() => {
+							clearClothesTemplate();
+							toggleEditOutfitModal(false);
+						}}>
+						<Icon
+							style={styles.closeButtonIcon}
+							size={40}
+							name='close'
+							color='#CCC'></Icon>
 					</TouchableOpacity>
 					<TouchableOpacity
 						onPress={() =>
-							Alert.alert('Confirm Delete', 'Are you sure you want to delete this item?', [
-								{ text: 'Confirm', onPress: this.deleteOutfit },
-								{ text: 'Cancel' },
-							])
+							Alert.alert(
+								'Confirm Delete',
+								'Are you sure you want to delete this item?',
+								[
+									{ text: 'Confirm', onPress: this.deleteOutfit },
+									{ text: 'Cancel' },
+								]
+							)
 						}
-						style={styles.deleteButton}
-					>
+						style={styles.deleteButton}>
 						<Icon size={40} name='delete' color='red'></Icon>
 					</TouchableOpacity>
-					{this.renderSharedOutfitModal('Edit Outfit', () => this.updateOutfit())}
+					{this.renderSharedOutfitModal('Edit Outfit', this.updateOutfit)}
 				</View>
 			</Modal>
 		);
 	};
 
 	renderAddClothesModal = () => {
+		const { isAddClothesModalVisible, toggleAddClothesModal } = this.props;
 		return (
 			<View style={{ marginTop: 22 }}>
-				<Modal animationType='slide' transparent={false} visible={this.state.isAddClothesModalVisible}>
+				<Modal
+					animationType='slide'
+					transparent={false}
+					visible={isAddClothesModalVisible}>
 					<TouchableOpacity
 						onPress={() => {
-							this.toggleAddClothesModal(false);
+							toggleAddClothesModal(false);
 						}}
-						style={styles.closeButton}
-					>
-						<Icon style={styles.closeButtonIcon} size={40} name='close' color='#CCC'></Icon>
+						style={styles.closeButton}>
+						<Icon
+							style={styles.closeButtonIcon}
+							size={40}
+							name='close'
+							color='#CCC'></Icon>
 					</TouchableOpacity>
 					<View style={{ marginTop: '10%', flex: 1 }}>
 						<Text style={styles.newOutfitTitle}>Your Clothes</Text>
@@ -273,35 +306,36 @@ export default class OutfitMenu extends React.Component {
 		);
 	};
 
-	toggleAddOutfitModal = async (value) => {
-		this.setState({ isAddOutfitModalVisible: value });
-	};
-
-	toggleAddClothesModal = async (value) => {
-		this.setState({ isAddClothesModalVisible: value });
-	};
-
-	toggleEditOutfitModal = async (value) => {
-		this.setState({ isEditOutfitModalVisible: value });
-	};
-
 	onPressOutfit = (outfitId) => {
-		this.toggleEditOutfitModal(true);
-		this.setState({ selectedOutfitId: outfitId });
-		const selectedOutfit = this.state.outfits.filter((x) => x.id == outfitId)[0];
-		console.log(selectedOutfit);
-		const outfitClothes = this.state.allClothes.filter((clothes) => {
-			return selectedOutfit.clothesId.includes(clothes.id);
+		const {
+			toggleEditOutfitModal,
+			selectOutfit,
+			addClothesToOutfit,
+			inputOutfitName,
+			clearClothesTemplate,
+			outfits,
+			allClothes,
+		} = this.props;
+		toggleEditOutfitModal(true);
+		selectOutfit(outfitId);
+		const selectedOutfit = outfits.filter((x) => x.id == outfitId)[0];
+		// console.log(selectedOutfit);
+		const outfitClothes = selectedOutfit.clothesIds.map((id) => {
+			return allClothes.filter((clothes) => clothes.id === id)[0];
 		});
-		this.setState({ addedClothes: outfitClothes, name: selectedOutfit.name });
-	};
-
-	onHandleClose = () => {
-		this.setState({ name: '', addedClothes: [] });
+		// allClothes.filter((clothes) => {
+		// 	return selectedOutfit.clothesId.includes(clothes.id);
+		// });
+		clearClothesTemplate();
+		inputOutfitName(selectedOutfit.name);
+		outfitClothes.forEach((clothes) => {
+			addClothesToOutfit(clothes);
+		});
 	};
 
 	renderOutfits = () => {
-		return this.state.outfits.map((outfit, index) => {
+		const { outfits, clearClothesTemplate } = this.props;
+		return outfits.map((outfit, index) => {
 			return (
 				<View
 					key={index}
@@ -309,15 +343,19 @@ export default class OutfitMenu extends React.Component {
 						borderBottomColor: '#CCC',
 						borderBottomWidth: 0.5,
 						height: Dimensions.get('window').height / 8,
-					}}
-				>
-					<Outfit onPressModal={this.onPressOutfit} outfit={outfit} onHandleClose />
+					}}>
+					<Outfit
+						onPressModal={this.onPressOutfit}
+						outfit={outfit}
+						onHandleClose={clearClothesTemplate}
+					/>
 				</View>
 			);
 		});
 	};
 
 	render() {
+		const { toggleAddOutfitModal } = this.props;
 		return (
 			<View style={{ flex: 1 }}>
 				{this.renderAddOutfitModal()}
@@ -332,8 +370,7 @@ export default class OutfitMenu extends React.Component {
 						left: Dimensions.get('window').width / 2 - 25,
 						zIndex: 1,
 					}}
-					onPress={() => this.toggleAddOutfitModal(true)}
-				>
+					onPress={() => toggleAddOutfitModal(true)}>
 					<Icon
 						style={{
 							borderWidth: 1,
@@ -342,10 +379,32 @@ export default class OutfitMenu extends React.Component {
 						}}
 						size={50}
 						name='add'
-						color='#CCC'
-					></Icon>
+						color='#CCC'></Icon>
 				</TouchableOpacity>
 			</View>
 		);
 	}
 }
+
+const mapStateToProps = (state) => ({
+	isAddOutfitModalVisible: state.modal.isAddOutfitModalVisible,
+	isEditOutfitModalVisible: state.modal.isEditOutfitModalVisible,
+	isAddClothesModalVisible: state.modal.isAddClothesModalVisible,
+	allClothes: state.clothes.clothes,
+	...state.outfit,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+	toggleAddClothesModal: (value) => dispatch(toggleAddClothesModal(value)),
+	toggleAddOutfitModal: (value) => dispatch(toggleAddOutfitModal(value)),
+	toggleEditOutfitModal: (value) => dispatch(toggleEditOutfitModal(value)),
+	addClothesToOutfit: (clothes) => dispatch(addClothesToOutfit(clothes)),
+	removeClothesFromOutfit: (clothesId) => dispatch(removeClothesFromOutfit(clothesId)),
+	inputOutfitName: (name) => dispatch(inputOutfitName(name)),
+	fetchOutfits: () => dispatch(fetchOutfits()),
+	clearClothesTemplate: () => dispatch(clearClothesTemplate()),
+	selectOutfit: (outfitId) => dispatch(selectOutfit(outfitId)),
+	fetchClothes: () => dispatch(fetchClothes()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(OutfitMenu);

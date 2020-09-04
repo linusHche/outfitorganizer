@@ -42,7 +42,7 @@ export default StyleSheet.create({
 	},
 	thumbnail: {
 		width: '25%',
-		height: '100%',
+		height: '90%',
 		borderWidth: 1,
 		borderRadius: 5,
 		borderColor: '#CCC',

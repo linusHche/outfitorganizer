@@ -43,6 +43,7 @@ export default StyleSheet.create({
 		marginHorizontal: 5,
 		borderRadius: 10,
 		justifyContent: 'center',
+		marginBottom: 5,
 	},
 	addClothesText: {
 		textAlign: 'center',

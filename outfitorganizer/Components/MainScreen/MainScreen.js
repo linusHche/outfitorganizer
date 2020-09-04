@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, AsyncStorage } from 'react-native';
+import { Platform } from 'react-native';
 import OutfitMenu from '../OutfitMenu/OutfitMenu';
 import ClothesMenu from '../ClothesMenu/ClothesMenu';
 import { NavigationContainer } from '@react-navigation/native';
