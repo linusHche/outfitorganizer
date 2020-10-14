@@ -2,7 +2,6 @@ import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
 	textbox: {
-		fontFamily: 'American Typewriter',
 		fontSize: 20,
 		height: 50,
 		borderColor: '#CCC',
@@ -17,7 +16,6 @@ export default StyleSheet.create({
 		height: '5%',
 	},
 	text: {
-		fontFamily: 'American Typewriter',
 		fontSize: 20,
 		textAlign: 'center',
 	},
@@ -27,7 +25,6 @@ export default StyleSheet.create({
 		marginBottom: '5%',
 	},
 	title: {
-		fontFamily: 'American Typewriter',
 		fontSize: 30,
 		textAlign: 'center',
 		marginVertical: '20%',

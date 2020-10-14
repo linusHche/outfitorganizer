@@ -2,7 +2,6 @@ import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
 	textbox: {
-		fontFamily: 'American Typewriter',
 		fontSize: 15,
 		borderBottomWidth: 2,
 		marginVertical: '5%',
@@ -23,7 +22,6 @@ export default StyleSheet.create({
 		flex: 1,
 		textAlign: 'center',
 		fontSize: 30,
-		fontFamily: 'American Typewriter',
 	},
 	cameraContainer: {
 		overflow: 'hidden',
@@ -33,7 +31,6 @@ export default StyleSheet.create({
 		marginHorizontal: 5,
 	},
 	cameraContentText: {
-		fontFamily: 'American Typewriter',
 		textAlign: 'center',
 		justifyContent: 'center',
 	},
@@ -47,6 +44,5 @@ export default StyleSheet.create({
 	},
 	addClothesText: {
 		textAlign: 'center',
-		fontFamily: 'American Typewriter',
 	},
 });

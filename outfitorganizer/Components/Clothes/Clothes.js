@@ -77,7 +77,6 @@ export default Clothes = ({
 								flex: 1,
 								textAlign: 'center',
 								fontSize: 30,
-								fontFamily: 'American Typewriter',
 							}}>
 							Edit Clothes
 						</Text>

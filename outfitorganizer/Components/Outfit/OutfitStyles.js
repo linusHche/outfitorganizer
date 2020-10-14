@@ -13,7 +13,6 @@ export default StyleSheet.create({
 		borderColor: '#CCC',
 	},
 	textbox: {
-		fontFamily: 'American Typewriter',
 		fontSize: 15,
 		borderBottomWidth: 2,
 		marginVertical: '5%',
@@ -53,6 +52,5 @@ export default StyleSheet.create({
 		flex: 1,
 		textAlign: 'center',
 		fontSize: 30,
-		fontFamily: 'American Typewriter',
 	},
 });
