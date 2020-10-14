@@ -10,7 +10,9 @@ function clothes(pg, dbx) {
 	router.get('/', async (req, res) => {
 		const currentUser = req.decoded;
 		try {
-			const clothes = await pg('clothes').select('id', 'name', 'description', 'path').where('userid', currentUser.id);
+			const clothes = await pg('clothes')
+				.select('id', 'name', 'description', 'path')
+				.where('userid', currentUser.id);
 			return res.json({ clothes });
 		} catch (err) {
 			console.error(err);
@@ -26,7 +28,9 @@ function clothes(pg, dbx) {
 		const uploadPath = `/${currentUser.name}/${pictureName}.jpg`;
 		try {
 			await dbx.filesUpload({ path: uploadPath, contents });
-			let imageUrl = (await dbx.sharingCreateSharedLinkWithSettings({ path: uploadPath })).url;
+			let imageUrl = (
+				await dbx.sharingCreateSharedLinkWithSettings({ path: uploadPath })
+			).url;
 			imageUrl = imageUrl.slice(0, imageUrl.length - 4) + 'raw=1';
 			await pg
 				.insert({
@@ -39,8 +43,13 @@ function clothes(pg, dbx) {
 			return res.status(200).json({ path: imageUrl });
 		} catch (err) {
 			console.error(err);
-			if (err.status === 409) return res.status(409).json({ msg: 'Clothes with this name already exist' });
-			return res.status(500).json({ msg: 'Something went wrong, please try again' });
+			if (err.status === 409)
+				return res
+					.status(409)
+					.json({ msg: 'Clothes with this name already exist' });
+			return res
+				.status(500)
+				.json({ msg: 'Something went wrong, please try again' });
 		}
 	});
 
@@ -50,7 +59,10 @@ function clothes(pg, dbx) {
 		try {
 			if (previousName !== name)
 				await dbx.filesMove({
-					from_path: `/${currentUser.name}/${previousName.replace(' ', '')}.jpg`,
+					from_path: `/${currentUser.name}/${previousName.replace(
+						' ',
+						''
+					)}.jpg`,
 					to_path: `/${currentUser.name}/${name.replace(' ', '')}.jpg`,
 				});
 			await pg('clothes').where('id', req.params.id).update({
@@ -59,7 +71,10 @@ function clothes(pg, dbx) {
 			});
 			return res.status(200).send();
 		} catch (err) {
-			if (err.status === 409) return res.status(409).json({ msg: 'Clothes with this name already exist' });
+			if (err.status === 409)
+				return res
+					.status(409)
+					.json({ msg: 'Clothes with this name already exist' });
 			console.error(err);
 		}
 	});
@@ -67,8 +82,17 @@ function clothes(pg, dbx) {
 	router.delete('/:id', async (req, res) => {
 		const currentUser = req.decoded;
 		try {
-			const deletedClothes = await pg('clothes').where('id', req.params.id).delete().returning('*');
-			await dbx.filesDelete({ path: `/${currentUser.name}/${deletedClothes[0].name.replace(' ', '')}.jpg` });
+			await pg('combination').where('clothesid', req.params.id).delete();
+			const deletedClothes = await pg('clothes')
+				.where('id', req.params.id)
+				.delete()
+				.returning('*');
+			await dbx.filesDelete({
+				path: `/${currentUser.name}/${deletedClothes[0].name.replace(
+					' ',
+					''
+				)}.jpg`,
+			});
 			return res.status(200).send();
 		} catch (err) {
 			console.error(err);

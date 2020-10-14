@@ -19,7 +19,6 @@ export default StyleSheet.create({
 		borderColor: '#CCC',
 	},
 	textbox: {
-		fontFamily: 'American Typewriter',
 		fontSize: 15,
 		borderBottomWidth: 2,
 		marginVertical: '5%',

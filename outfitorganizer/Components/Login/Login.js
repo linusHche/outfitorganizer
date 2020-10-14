@@ -1,5 +1,13 @@
 import React from 'react';
-import { TouchableOpacity, Text, View, TextInput, Keyboard, TouchableWithoutFeedback, AsyncStorage } from 'react-native';
+import {
+	TouchableOpacity,
+	Text,
+	View,
+	TextInput,
+	Keyboard,
+	TouchableWithoutFeedback,
+	AsyncStorage,
+} from 'react-native';
 import styles from './LoginStyles';
 import { API_ADDRESS } from '../../constants';
 import { connect } from 'react-redux';
@@ -49,29 +57,31 @@ class Login extends React.Component {
 						keyboardAppearance={'dark'}
 						placeholder='Username'
 						style={styles.textbox}
-						onChangeText={(text) => inputUsername(text)}
-					></TextInput>
+						onChangeText={(text) => inputUsername(text)}></TextInput>
 					<TextInput
 						secureTextEntry={true}
 						keyboardAppearance={'dark'}
 						placeholder='Password'
 						style={styles.textbox}
-						onChangeText={(text) => inputPassword(text)}
-					></TextInput>
-					<TouchableOpacity style={styles.button} title='Press' onPress={this.processLogin}>
+						onChangeText={(text) => inputPassword(text)}></TextInput>
+					<TouchableOpacity
+						style={styles.button}
+						title='Press'
+						onPress={this.processLogin}>
 						<View style={{ borderWidth: '1', flex: 1 }}>
 							<Text style={styles.text}>Login</Text>
 						</View>
 					</TouchableOpacity>
-					<TouchableOpacity style={[styles.button, { marginTop: 20 }]} title='Press' onPress={() => navigation.navigate('Register')}>
+					<TouchableOpacity
+						style={[styles.button, { marginTop: 20 }]}
+						title='Press'
+						onPress={() => navigation.navigate('Register')}>
 						<View style={{ borderWidth: '1', flex: 1 }}>
 							<Text
 								style={{
-									fontFamily: 'American Typewriter',
 									fontSize: 20,
 									textAlign: 'center',
-								}}
-							>
+								}}>
 								Register
 							</Text>
 						</View>
